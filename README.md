@@ -2,6 +2,8 @@
 
 ## Link
 
+https://anduhrooo.github.io/task-board-uci/
+
 ## Description
 To create a Kanban task board for use as a to do list. This app runs in the browser and utilizes JQuery, JQuery UI, Bootstrap, Google's font API and DayJS. 
 
