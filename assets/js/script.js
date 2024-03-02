@@ -3,23 +3,8 @@ let taskList = JSON.parse(localStorage.getItem("tasks"));
 let nextId = JSON.parse(localStorage.getItem("nextId"));
 const modal = $("#task-modal")
 
-
-// // Todo: create a function to create a task card
-function createTaskCard(task) {  
-    const taskCard = $(`<div>`)
-    const cardTitle = $('<h4>')
-    cardTitle.text(project.name)
-    const cardDueDate = $(`<p>`)
-    cardDueDate.text(project.date)
-    const cardDescription = $(`<p>`)
-    cardDescription.text(project.description)
-    const cardBody = $(`<div>`)
-    const cardDelete = $(`<button>`)
-    cardDelete.text("Delete")
-
-    taskCard.append(cardTitle, cardDueDate, cardDescription, cardDelete);
-    console.log(createTaskCard)
-}
+//loads from local storage
+loadFromLocalStorage()
 
 
 // when add task is clicked, function runs
@@ -32,13 +17,26 @@ function handleAddTask(event){
     const taskDescription =$("#description").val()
 
     const newCard = $("<div class='card'>" + taskName + "<br>" + taskDate + "<br>" + taskDescription + "<span class='deleteTask'>X</span></div>"); 
-
+saveToLocalStorage()
     newCard.draggable({
         revert: "invalid",
         cursor: "move"
     });
+    // places item on top of lane classes
+    newCard.css("z-index", "10")
+    
+    // changes the color of the card based on when it is
+    const today = dayjs();
+    const taskDueDate = dayjs(taskDate, "DD/MM/YYYY")
+    if (today.isSame(taskDueDate, "day")) {
+        newCard.addClass("bg-warning text-white");
+      } else if (today.isAfter(taskDueDate)) {
+        newCard.addClass("bg-danger text-white");}
+    
 
     $("#to-do").append(newCard)
+    // saves card to local storage
+    
 
     // clears form
     $("#title").val("")
@@ -46,16 +44,34 @@ function handleAddTask(event){
     $("#description").val("")
 
 }
-
+//sets lanes to droppable
 $(".droppable").droppable({
     accept: ".card",
 });
 
 
-// // Todo: create a function to handle dropping a task into a new status lane
-// function handleDrop(event, ui) {
 
-// }
+function saveToLocalStorage() {
+    const cards = $(".card").map(function() {
+        return $(this).prop('outerHTML');
+    }).get();
+    localStorage.setItem("toDoList", JSON.stringify(cards));
+}
+
+function loadFromLocalStorage() {
+    const cards = JSON.parse(localStorage.getItem("toDoList")) || [];
+    cards.forEach(function(cardHTML) {
+        var card = $(cardHTML);
+        card.draggable({
+            revert: "invalid",
+            cursor: "move"
+        });
+        $("#" + card.data("section")).append(card);
+    });
+}
+
+
+
 
 // Todo: when the page loads, render the task list, add event listeners, make lanes droppable, and make the due date field a date picker
 $(document).ready(function () {
@@ -75,6 +91,13 @@ $(document).ready(function () {
 //    add event listener to delete card
    $(".card").on("click", ".deleteTask", function(){
     $(this).parent().remove();
+    saveToLocalStorage();
    })
+
+//    makes each section
+   $(".lane").droppable({
+    accept: ".draggable",
+    drop: handleDrop,
+  });
 });
 
